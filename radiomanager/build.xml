@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+	- Erzeugt die JAR-Datei des Projekts
+	  (Hinweis: Source-Dateien werden NICHT automatisch vorher kompiliert!)
+-->
+<project default="jar" basedir=".">
+
+	<property name="start.dir" value="${basedir}" />
+	<property name="src.dir" value="${start.dir}/src" />
+	<property name="bin.dir" value="${start.dir}/bin" />
+	<property name="target.dir" value="${start.dir}/target" />
+	<property name="release.dir" value="${start.dir}/release" />
+
+	<target name="jar">
+		<antcall target="prepare" />
+		<antcall target="createJar" />
+	</target>
+
+	<target name="prepare">
+		<mkdir dir="${target.dir}" />
+		<mkdir dir="${release.dir}"/>
+		<delete includeemptydirs="true">
+			<fileset dir="${target.dir}" includes="**/*"/>
+		</delete>
+		<delete includeemptydirs="true">
+			<fileset dir="${release.dir}" includes="**/*" />
+		</delete>
+	</target>
+
+	<target name="createJar">
+		<!-- Klassen und Ressourcen kopieren -->
+		<copy todir="${target.dir}">
+			<fileset dir="${bin.dir}">
+				<include name="org/zephyrsoft/**" />
+				<include name="*.properties" />
+				<include name="res/**" />
+				<exclude name="CVS/**" />
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+
+		<!-- Ziel-JAR erstellen -->
+		<jar basedir="${target.dir}" destfile="${release.dir}/radiomanager.jar">
+			<manifest>
+				<attribute name="Main-Class" value="org.zephyrsoft.radiomanager.CheckForBroadcast" />
+				<attribute name="Implementation-Vendor" value="zephyrsoft.net"/>
+				<attribute name="Implementation-Title" value="RadioManager"/>
+			</manifest>
+		</jar>
+	</target>
+
+</project>
