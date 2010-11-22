@@ -7,42 +7,45 @@ import javax.swing.text.*;
 
 /**
  * Checks if a broadcast is available for the current day and time.
- * 
  * All broadcasts have to be inside subdirectories located in the "radio base directory" (first parameter).
- * 
- * The naming scheme for the subdirectories is [day or days][starting hour]. Some examples: 
+ * The naming scheme for the subdirectories is [day or days][starting hour]. Some examples:
  * <ul>
  * <li>Mo18</li>
  * <li>MoDiDoFrSaSo20</li>
  * <li>SaSo08</li>
  * </ul>
- * 
  * When calling this class, a return value of 0 means that there is a broadcast (which is printed to stdout).
- * A negative value indicates a problem with parameters or file system access rights. 
+ * A negative value indicates a problem with parameters or file system access rights (error is printed to stdout).
  * A positive value means that there is no broadcast planned for the current time.
  * 
  * @author Mathis Dirksen-Thedens
  */
 public class CheckForBroadcast {
 	
-	/** maps days of week to their abbreviations used in dir names */
-	private static Map<Integer, String> DAY_OF_WEEK_ABBREVIATED;
-	
 	/**
 	 * main method, see {@link CheckForBroadcast} class comment for more information
 	 */
 	public static void main(String[] args) {
-		if (args==null || args.length==0) {
-			// no arguments => radio base directory missing
-			System.out.println("ERROR_EXPECTED_RADIO_BASE_DIR_AS_FIRST_ARGUMENT");
-			exit(-1);
+		File radioBaseDir = null;
+		if (args != null && args.length >= 1) {
+			radioBaseDir = new File(args[0]);
+		}
+		BroadcastData data = doCheckForBroadcast(radioBaseDir);
+		System.out.println((data.getResultText() == null ? "" : data.getResultText()));
+		exit(data.getResultType().getIntValue());
+	}
+	
+	/**
+	 * check if a broadcast is currently available, see {@link CheckForBroadcast} class comment for more information
+	 */
+	public static BroadcastData doCheckForBroadcast(File radioBaseDir) {
+		if (radioBaseDir == null || !radioBaseDir.isDirectory() || !radioBaseDir.canRead()) {
+			return new BroadcastData(CheckResultEnum.ERROR, "PROBLEM_WITH_RADIO_BASE_DIR");
 		} else {
-			populateLookupTable();
-			
+			Map<Integer, String> daysOfWeekAbbeviated = populateLookupTable();
 			Calendar currentDate = new GregorianCalendar();
 			try {
-				File mainDir = new File(args[0]);
-				File[] subDirs = mainDir.listFiles(new FileFilter() {
+				File[] subDirs = radioBaseDir.listFiles(new FileFilter() {
 					@Override
 					public boolean accept(File pathname) {
 						// accept only directories
@@ -53,7 +56,7 @@ public class CheckForBroadcast {
 					@Override
 					public int compare(File o1, File o2) {
 						// null is illegal
-						if (o1==null || o2==null) {
+						if (o1 == null || o2 == null) {
 							throw new IllegalArgumentException("a file to compare was null");
 						}
 						// compare the absolute pathnames directly
@@ -61,36 +64,43 @@ public class CheckForBroadcast {
 					}
 				});
 				for (File subDir : subDirs) {
-					if (isDayOfWeekIncluded(currentDate, subDir.getName()) && isHourOfDayIncluded(currentDate, subDir.getName())) {
-						// planned broadcast found 
-						System.out.println(subDir.getAbsolutePath());
-						exit(0);
+					if (isDayOfWeekIncluded(daysOfWeekAbbeviated, currentDate, subDir.getName())
+						&& isHourOfDayIncluded(currentDate, subDir.getName())) {
+						// planned broadcast found
+						return new BroadcastData(CheckResultEnum.BROADCAST_FOUND, subDir.getAbsolutePath());
 					}
 				}
 				// obviously no broadcast planned
-				exit(1);
+				return new BroadcastData(CheckResultEnum.NO_BROADCAST_FOUND, null);
 			} catch (Exception e) {
 				// signal exception
-				e.printStackTrace();
-				exit(-2);
+				return new BroadcastData(CheckResultEnum.ERROR, getStackTrace(e));
 			}
 		}
 	}
-
+	
+	private static String getStackTrace(Throwable aThrowable) {
+		final Writer result = new StringWriter();
+		final PrintWriter printWriter = new PrintWriter(result);
+		aThrowable.printStackTrace(printWriter);
+		return result.toString();
+	}
+	
 	/**
 	 * fill the static lookup table with the days of week
 	 */
-	private static void populateLookupTable() {
-		DAY_OF_WEEK_ABBREVIATED = new HashMap<Integer, String>();
-		DAY_OF_WEEK_ABBREVIATED.put(Calendar.MONDAY, "Mo");
-		DAY_OF_WEEK_ABBREVIATED.put(Calendar.TUESDAY, "Di");
-		DAY_OF_WEEK_ABBREVIATED.put(Calendar.WEDNESDAY, "Mi");
-		DAY_OF_WEEK_ABBREVIATED.put(Calendar.THURSDAY, "Do");
-		DAY_OF_WEEK_ABBREVIATED.put(Calendar.FRIDAY, "Fr");
-		DAY_OF_WEEK_ABBREVIATED.put(Calendar.SATURDAY, "Sa");
-		DAY_OF_WEEK_ABBREVIATED.put(Calendar.SUNDAY, "So");
+	private static Map<Integer, String> populateLookupTable() {
+		Map<Integer, String> daysOfWeekAbbeviated = new HashMap<Integer, String>();
+		daysOfWeekAbbeviated.put(Calendar.MONDAY, "Mo");
+		daysOfWeekAbbeviated.put(Calendar.TUESDAY, "Di");
+		daysOfWeekAbbeviated.put(Calendar.WEDNESDAY, "Mi");
+		daysOfWeekAbbeviated.put(Calendar.THURSDAY, "Do");
+		daysOfWeekAbbeviated.put(Calendar.FRIDAY, "Fr");
+		daysOfWeekAbbeviated.put(Calendar.SATURDAY, "Sa");
+		daysOfWeekAbbeviated.put(Calendar.SUNDAY, "So");
+		return daysOfWeekAbbeviated;
 	}
-
+	
 	/**
 	 * exit the application with a defined return value
 	 */
@@ -118,9 +128,10 @@ public class CheckForBroadcast {
 	/**
 	 * tests if the day-of-week of the given date is mentioned in the subDirName
 	 */
-	private static boolean isDayOfWeekIncluded(Calendar date, String subDirName) {
+	private static boolean isDayOfWeekIncluded(Map<Integer, String> daysOfWeekAbbeviated, Calendar date,
+		String subDirName) {
 		List<String> subDirNameParts = splitIntoPairs(subDirName);
-		String currentDayOfWeekAbbreviated = DAY_OF_WEEK_ABBREVIATED.get(date.get(Calendar.DAY_OF_WEEK));
+		String currentDayOfWeekAbbreviated = daysOfWeekAbbeviated.get(date.get(Calendar.DAY_OF_WEEK));
 		boolean ret = subDirNameParts.contains(currentDayOfWeekAbbreviated);
 		return ret;
 	}
