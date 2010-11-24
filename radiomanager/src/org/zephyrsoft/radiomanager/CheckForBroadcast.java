@@ -32,18 +32,19 @@ public class CheckForBroadcast {
 		}
 		BroadcastData data = doCheckForBroadcast(radioBaseDir);
 		System.out.println((data.getResultText() == null ? "" : data.getResultText()));
-		exit(data.getResultType().getIntValue());
+		Utils.exit(data.getResultType().getIntValue());
 	}
 	
 	/**
 	 * check if a broadcast is currently available, see {@link CheckForBroadcast} class comment for more information
 	 */
 	public static BroadcastData doCheckForBroadcast(File radioBaseDir) {
+		Calendar currentDate = new GregorianCalendar();
+		String dayOfWeek = Utils.getDayOfWeek(currentDate);
+		String hourOfDay = Utils.getHourOfDay(currentDate);
 		if (radioBaseDir == null || !radioBaseDir.isDirectory() || !radioBaseDir.canRead()) {
 			return new BroadcastData(CheckResultEnum.ERROR, "PROBLEM_WITH_RADIO_BASE_DIR");
 		} else {
-			Map<Integer, String> daysOfWeekAbbeviated = populateLookupTable();
-			Calendar currentDate = new GregorianCalendar();
 			try {
 				File[] subDirs = radioBaseDir.listFiles(new FileFilter() {
 					@Override
@@ -64,8 +65,8 @@ public class CheckForBroadcast {
 					}
 				});
 				for (File subDir : subDirs) {
-					if (isDayOfWeekIncluded(daysOfWeekAbbeviated, currentDate, subDir.getName())
-						&& isHourOfDayIncluded(currentDate, subDir.getName())) {
+					if (Utils.isDayOfWeekIncluded(dayOfWeek, subDir.getName())
+						&& Utils.isHourOfDayIncluded(hourOfDay, subDir.getName())) {
 						// planned broadcast found
 						return new BroadcastData(CheckResultEnum.BROADCAST_FOUND, subDir.getAbsolutePath());
 					}
@@ -74,78 +75,52 @@ public class CheckForBroadcast {
 				return new BroadcastData(CheckResultEnum.NO_BROADCAST_FOUND, null);
 			} catch (Exception e) {
 				// signal exception
-				return new BroadcastData(CheckResultEnum.ERROR, getStackTrace(e));
+				return new BroadcastData(CheckResultEnum.ERROR, Utils.getStackTrace(e));
 			}
 		}
 	}
 	
-	private static String getStackTrace(Throwable aThrowable) {
-		final Writer result = new StringWriter();
-		final PrintWriter printWriter = new PrintWriter(result);
-		aThrowable.printStackTrace(printWriter);
-		return result.toString();
-	}
-	
 	/**
-	 * fill the static lookup table with the days of week
+	 * check if a broadcast is available for the given day-of-week and hour,
+	 * see {@link CheckForBroadcast} class comment for more information
 	 */
-	private static Map<Integer, String> populateLookupTable() {
-		Map<Integer, String> daysOfWeekAbbeviated = new HashMap<Integer, String>();
-		daysOfWeekAbbeviated.put(Calendar.MONDAY, "Mo");
-		daysOfWeekAbbeviated.put(Calendar.TUESDAY, "Di");
-		daysOfWeekAbbeviated.put(Calendar.WEDNESDAY, "Mi");
-		daysOfWeekAbbeviated.put(Calendar.THURSDAY, "Do");
-		daysOfWeekAbbeviated.put(Calendar.FRIDAY, "Fr");
-		daysOfWeekAbbeviated.put(Calendar.SATURDAY, "Sa");
-		daysOfWeekAbbeviated.put(Calendar.SUNDAY, "So");
-		return daysOfWeekAbbeviated;
-	}
-	
-	/**
-	 * exit the application with a defined return value
-	 */
-	private static void exit(int returnValue) {
-		System.exit(returnValue);
-	}
-	
-	/**
-	 * splits the given subDirName into pairs of characters (odd length results in exception)
-	 */
-	private static List<String> splitIntoPairs(String subDirName) {
-		if (subDirName.length() % 2 == 1) {
-			throw new IllegalArgumentException("subDirName contains an odd number of characters");
+	public static BroadcastData doCheckForBroadcast(File radioBaseDir, String dayOfWeek, String hourOfDay) {
+		if (radioBaseDir == null || !radioBaseDir.isDirectory() || !radioBaseDir.canRead()) {
+			return new BroadcastData(CheckResultEnum.ERROR, "PROBLEM_WITH_RADIO_BASE_DIR");
 		} else {
-			List<String> ret = new ArrayList<String>();
-			int i = 0;
-			while (i < subDirName.length()) {
-				ret.add(subDirName.substring(i, i + 2));
-				i = i + 2;
+			try {
+				File[] subDirs = radioBaseDir.listFiles(new FileFilter() {
+					@Override
+					public boolean accept(File pathname) {
+						// accept only directories
+						return pathname.isDirectory();
+					}
+				});
+				Arrays.sort(subDirs, new Comparator<File>() {
+					@Override
+					public int compare(File o1, File o2) {
+						// null is illegal
+						if (o1 == null || o2 == null) {
+							throw new IllegalArgumentException("a file to compare was null");
+						}
+						// compare the absolute pathnames directly
+						return o1.getAbsolutePath().compareTo(o2.getAbsolutePath());
+					}
+				});
+				for (File subDir : subDirs) {
+					if (Utils.isDayOfWeekIncluded(dayOfWeek, subDir.getName())
+						&& Utils.isHourOfDayIncluded(hourOfDay, subDir.getName())) {
+						// planned broadcast found
+						return new BroadcastData(CheckResultEnum.BROADCAST_FOUND, subDir.getAbsolutePath());
+					}
+				}
+				// obviously no broadcast planned
+				return new BroadcastData(CheckResultEnum.NO_BROADCAST_FOUND, null);
+			} catch (Exception e) {
+				// signal exception
+				return new BroadcastData(CheckResultEnum.ERROR, Utils.getStackTrace(e));
 			}
-			return ret;
 		}
-	}
-	
-	/**
-	 * tests if the day-of-week of the given date is mentioned in the subDirName
-	 */
-	private static boolean isDayOfWeekIncluded(Map<Integer, String> daysOfWeekAbbeviated, Calendar date,
-		String subDirName) {
-		List<String> subDirNameParts = splitIntoPairs(subDirName);
-		String currentDayOfWeekAbbreviated = daysOfWeekAbbeviated.get(date.get(Calendar.DAY_OF_WEEK));
-		boolean ret = subDirNameParts.contains(currentDayOfWeekAbbreviated);
-		return ret;
-	}
-	
-	/**
-	 * tests if the hour-of-day of the given date is mentioned in the subDirName
-	 */
-	private static boolean isHourOfDayIncluded(Calendar date, String subDirName) {
-		List<String> subDirNameParts = splitIntoPairs(subDirName);
-		DecimalFormat formatter = new DecimalFormat("00");
-		String currentHourOfDay = formatter.format(date.get(Calendar.HOUR_OF_DAY));
-		String subDirHourOfDay = subDirNameParts.get(subDirNameParts.size() - 1);
-		boolean ret = subDirHourOfDay.equals(currentHourOfDay);
-		return ret;
 	}
 	
 }
