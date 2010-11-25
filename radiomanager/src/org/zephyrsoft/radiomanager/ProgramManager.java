@@ -10,9 +10,12 @@ import java.util.*;
  */
 public class ProgramManager {
 	
-	private static String[] weekdays = { "Mo", "Di", "Mi", "Do", "Fr", "Sa", "So" };
-	private static String[] hours = { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12",
-		"13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23" };
+	private static final String firstColWidth = "5%";
+	private static final String normalColWidth = "10%";
+	
+	private static final String[] weekdays = { "Mo", "Di", "Mi", "Do", "Fr", "Sa", "So" };
+	private static final String[] hours = { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11",
+		"12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23" };
 	
 	/**
 	 * create the webradio program table in HTML
@@ -20,21 +23,28 @@ public class ProgramManager {
 	public static String getProgramTableAsHtml(File radioBaseDir) {
 		StringBuilder ret = new StringBuilder();
 		
-		ret.append("<table>\n<tr><td>&nbsp;</td>");
+		ret.append("<style type=\"text/css\">\n" + "<!--\n" + ".c1 {\n" + "font-weight:bold;\n" + "font-size:100%;\n"
+			+ "padding:2px;\n" + "border-bottom:1px solid grey;\n" + "border-right:1px solid grey;\n"
+			+ "vertical-align:top;\n" + "}\n" + ".c2 {\n" + "font-weight:normal;\n" + "font-size:90%;\n" + "padding:2px;\n"
+			+ "border-bottom:1px solid grey;\n" + "border-right:1px solid grey;\n" + "vertical-align:top;\n" + "}\n"
+			+ "-->\n" + "</style>\n");
+		
+		ret.append("<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n<tr><td class=\"c1\" style=\"width:"
+			+ firstColWidth + "\">&nbsp;</td>");
 		for (String day : weekdays) {
-			ret.append("<td>" + day + "</td>");
+			ret.append("<td class=\"c1\" style=\"width:" + normalColWidth + "\">" + day + "</td>");
 		}
 		ret.append("</tr>\n");
 		for (String hour : hours) {
 			ret.append("<tr>");
-			ret.append("<td>" + hour + "</td>");
+			ret.append("<td class=\"c1\">" + hour + "</td>");
 			for (String day : weekdays) {
-				ret.append("<td>");
+				ret.append("<td class=\"c2\">");
 				BroadcastData broadcastData = CheckForBroadcast.doCheckForBroadcast(radioBaseDir, day, hour);
 				if (broadcastData.getResultType() == CheckResultEnum.BROADCAST_FOUND) {
-					ret.append("<small>" + getInfoFileContent(broadcastData.getResultText()) + "</small>");
+					ret.append(getInfoFileContent(broadcastData.getResultText()));
 				} else {
-					ret.append("<small>&nbsp;</small>");
+					ret.append("&nbsp;");
 				}
 				ret.append("</td>");
 			}
