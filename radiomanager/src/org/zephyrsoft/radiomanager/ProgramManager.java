@@ -1,7 +1,6 @@
 package org.zephyrsoft.radiomanager;
 
 import java.io.*;
-import java.util.*;
 
 /**
  * Manages the broadcast program table and supports the output as HTML.
@@ -20,7 +19,7 @@ public class ProgramManager {
 	/**
 	 * create the webradio program table in HTML
 	 */
-	public static String getProgramTableAsHtml(File radioBaseDir) {
+	public static String getProgramTableAsHtml(File... radioBaseDirs) {
 		StringBuilder ret = new StringBuilder();
 		
 		ret.append("<style type=\"text/css\">\n" + "<!--\n" + ".c1 {\n" + "font-weight:bold;\n" + "font-size:100%;\n"
@@ -40,7 +39,7 @@ public class ProgramManager {
 			ret.append("<td class=\"c1\">" + hour + "</td>");
 			for (String day : weekdays) {
 				ret.append("<td class=\"c2\">");
-				BroadcastData broadcastData = CheckForBroadcast.doCheckForBroadcast(radioBaseDir, day, hour);
+				BroadcastData broadcastData = CheckForBroadcast.doCheckForBroadcast(day, hour, radioBaseDirs);
 				if (broadcastData.getResultType() == CheckResultEnum.BROADCAST_FOUND) {
 					ret.append(getInfoFileContent(broadcastData.getResultText()));
 				} else {
@@ -64,7 +63,7 @@ public class ProgramManager {
 				StringBuilder content = new StringBuilder((int) infoFile.length());
 				while (in.ready()) {
 					content.append(in.readLine());
-					content.append("\n");
+					content.append('\n');
 				}
 				if (content.length() > 0) {
 					ret = content.toString();
