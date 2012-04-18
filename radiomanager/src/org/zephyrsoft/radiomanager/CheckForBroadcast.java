@@ -1,7 +1,11 @@
 package org.zephyrsoft.radiomanager;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileFilter;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Comparator;
+import java.util.GregorianCalendar;
 
 /**
  * Checks if a broadcast is available for the current day and time.
@@ -57,8 +61,9 @@ public class CheckForBroadcast {
 		FileFilter acceptOnlyDirectories = new FileFilter() {
 			@Override
 			public boolean accept(File pathname) {
-				// accept only directories
-				return pathname.isDirectory();
+				// accept only directories that don't start with "_" or "."
+				return pathname.isDirectory() && !pathname.getName().startsWith("_")
+					&& !pathname.getName().startsWith(".");
 			}
 		};
 		Comparator<File> compareAbsolutePathNames = new Comparator<File>() {
