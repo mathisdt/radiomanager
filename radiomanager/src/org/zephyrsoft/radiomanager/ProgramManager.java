@@ -65,6 +65,10 @@ public class ProgramManager {
 		GregorianCalendar calendar = new GregorianCalendar();
 		int currentHour = calendar.get(Calendar.HOUR_OF_DAY);
 		String currentWeekDay = getWeekdayAsString(calendar.get(Calendar.DAY_OF_WEEK));
+		calendar.add(Calendar.DATE, 1);
+		String nextWeekDay = getWeekdayAsString(calendar.get(Calendar.DAY_OF_WEEK));
+		final int minLines = 5;
+		int lines = 0;
 		for (String hour : hours) {
 			int hourAsInt = Integer.parseInt(hour);
 			if (hourAsInt < currentHour) {
@@ -82,6 +86,29 @@ public class ProgramManager {
 			}
 			ret.append("</td>");
 			ret.append("</tr>\n");
+			lines++;
+		}
+		if (lines < minLines) {
+			// add hours from next day to meet the defined minimum
+			for (String hour : hours) {
+				if (lines >= minLines) {
+					break;
+				}
+				int hourAsInt = Integer.parseInt(hour);
+				ret.append("<tr>");
+				boolean isCurrentHour = hourAsInt == currentHour;
+				ret.append("<td class=\"" + (isCurrentHour ? "c1" : "n1") + "\">" + hour + " Uhr</td>");
+				ret.append("<td class=\"" + (isCurrentHour ? "c2" : "n2") + "\">");
+				BroadcastData broadcastData = CheckForBroadcast.doCheckForBroadcast(nextWeekDay, hour, radioBaseDirs);
+				if (broadcastData.getResultType() == CheckResultEnum.BROADCAST_FOUND) {
+					ret.append(getInfoFileContent(broadcastData.getResultText()));
+				} else {
+					ret.append("&nbsp;");
+				}
+				ret.append("</td>");
+				ret.append("</tr>\n");
+				lines++;
+			}
 		}
 		ret.append("</table>");
 		
@@ -136,12 +163,15 @@ public class ProgramManager {
 	}
 	
 	public static void main(String[] args) {
-		File radioBaseDir = null;
-		if (args != null && args.length >= 1) {
-			radioBaseDir = new File(args[0]);
+		File[] radioBaseDirs = new File[args.length];
+		if (args != null) {
+			for (int i = 0; i < args.length; i++) {
+				radioBaseDirs[i] = new File(args[i]);
+			}
+			String data = getRestOfDayAsHtml(radioBaseDirs);
+			System.out.println(data == null ? "" : data);
+			Utils.exit(data == null ? 1 : 0);
 		}
-		String data = getProgramTableAsHtml(radioBaseDir);
-		System.out.println(data);
 	}
 	
 }
