@@ -3,9 +3,15 @@
  */
 package org.zephyrsoft.radiomanager;
 
-import java.io.*;
-import java.text.*;
-import java.util.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Utilities for webradio management.
@@ -31,7 +37,7 @@ public class Utils {
 	 * fill the static lookup table with the days of week
 	 */
 	public static Map<Integer, String> populateLookupTable() {
-		Map<Integer, String> daysOfWeekAbbeviated = new HashMap<Integer, String>();
+		Map<Integer, String> daysOfWeekAbbeviated = new HashMap<>();
 		daysOfWeekAbbeviated.put(Calendar.MONDAY, "Mo");
 		daysOfWeekAbbeviated.put(Calendar.TUESDAY, "Di");
 		daysOfWeekAbbeviated.put(Calendar.WEDNESDAY, "Mi");
@@ -56,7 +62,7 @@ public class Utils {
 		if (subDirName.length() % 2 == 1) {
 			throw new IllegalArgumentException("subDirName contains an odd number of characters");
 		} else {
-			List<String> ret = new ArrayList<String>();
+			List<String> ret = new ArrayList<>();
 			int i = 0;
 			while (i < subDirName.length()) {
 				ret.add(subDirName.substring(i, i + 2));
