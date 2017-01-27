@@ -19,7 +19,7 @@
 	</licenses>
 
 	<properties>
-		<version.java>1.7</version.java>
+		<version.java>1.8</version.java>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<main.class>org.zephyrsoft.radiomanager.CheckForBroadcast</main.class>
 	</properties>
