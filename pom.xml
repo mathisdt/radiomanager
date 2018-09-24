@@ -17,6 +17,12 @@
 	        <distribution>repo</distribution>
 	    </license>
 	</licenses>
+	
+	<scm>
+		<url>https://github.com/mathisdt/radiomanager</url>
+		<connection>scm:git:ssh:git@github.com:mathisdt/radiomanager.git</connection>
+		<developerConnection>scm:git:ssh:git@github.com:mathisdt/radiomanager.git</developerConnection>
+	</scm>
 
 	<properties>
 		<version.java>1.8</version.java>
