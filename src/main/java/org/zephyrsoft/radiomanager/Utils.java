@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.zephyrsoft.radiomanager;
 
@@ -15,14 +15,12 @@ import java.util.Map;
 
 /**
  * Utilities for webradio management.
- * 
- * @author Mathis Dirksen-Thedens
  */
 public class Utils {
-	
+
 	private static Map<Integer, String> DAYS_OF_WEEK_ABBREVIATED = populateLookupTable();
 	private static DecimalFormat HOUR_FORMATTER = new DecimalFormat("00");
-	
+
 	/**
 	 * get the given stack trace as string
 	 */
@@ -32,7 +30,7 @@ public class Utils {
 		aThrowable.printStackTrace(printWriter);
 		return result.toString();
 	}
-	
+
 	/**
 	 * fill the static lookup table with the days of week
 	 */
@@ -47,14 +45,14 @@ public class Utils {
 		daysOfWeekAbbeviated.put(Calendar.SUNDAY, "So");
 		return daysOfWeekAbbeviated;
 	}
-	
+
 	/**
 	 * exit the application with a defined return value
 	 */
 	public static void exit(int returnValue) {
 		System.exit(returnValue);
 	}
-	
+
 	/**
 	 * splits the given subDirName into pairs of characters (odd length results in exception)
 	 */
@@ -71,7 +69,7 @@ public class Utils {
 			return ret;
 		}
 	}
-	
+
 	/**
 	 * tests if the given day-of-week abbreviation is mentioned in the subDirName
 	 */
@@ -80,7 +78,7 @@ public class Utils {
 		boolean ret = subDirNameParts.contains(dayAbbreviation);
 		return ret;
 	}
-	
+
 	/**
 	 * gets the day-of-week abbreviation of the given date
 	 */
@@ -88,7 +86,7 @@ public class Utils {
 		String dayOfWeekAbbreviated = DAYS_OF_WEEK_ABBREVIATED.get(date.get(Calendar.DAY_OF_WEEK));
 		return dayOfWeekAbbreviated;
 	}
-	
+
 	/**
 	 * tests if the given hour-of-day is mentioned in the subDirName
 	 */
@@ -98,7 +96,7 @@ public class Utils {
 		boolean ret = subDirHourOfDay.equals(hour);
 		return ret;
 	}
-	
+
 	/**
 	 * gets the hour-of-day of the given date
 	 */

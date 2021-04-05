@@ -23,11 +23,9 @@ import java.util.GregorianCalendar;
  * When calling this class, a return value of 0 means that there is a broadcast (which is printed to stdout).
  * A negative value indicates a problem with parameters or file system access rights (error is printed to stdout).
  * A positive value means that there is no broadcast planned for the current time.
- * 
- * @author Mathis Dirksen-Thedens
  */
 public class CheckForBroadcast {
-	
+
 	/**
 	 * main method, see {@link CheckForBroadcast} class comment for more information
 	 */
@@ -42,7 +40,7 @@ public class CheckForBroadcast {
 			Utils.exit(data.getResultType().getIntValue());
 		}
 	}
-	
+
 	/**
 	 * check if a broadcast is currently available, see {@link CheckForBroadcast} class comment for more information
 	 */
@@ -52,7 +50,7 @@ public class CheckForBroadcast {
 		String hourOfDay = Utils.getHourOfDay(currentDate);
 		return doCheckForBroadcast(dayOfWeek, hourOfDay, radioBaseDirs);
 	}
-	
+
 	/**
 	 * check if a broadcast is available for the given day-of-week and hour,
 	 * see {@link CheckForBroadcast} class comment for more information
@@ -100,5 +98,5 @@ public class CheckForBroadcast {
 		// obviously no broadcast planned
 		return new BroadcastData(CheckResultEnum.NO_BROADCAST_FOUND, null);
 	}
-	
+
 }
