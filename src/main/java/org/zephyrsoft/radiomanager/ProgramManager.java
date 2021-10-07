@@ -21,14 +21,31 @@ public class ProgramManager {
 	/**
 	 * create the webradio program table in HTML
 	 */
-	public static String getProgramTableAsHtml(File... radioBaseDirs) {
+	public static String getProgramTableAsHtml(final File... radioBaseDirs) {
 		StringBuilder ret = new StringBuilder();
 
-		ret.append("<style type=\"text/css\">\n" + "<!--\n" + ".c1 {\n" + "font-weight:bold;\n" + "font-size:100%;\n"
-			+ "padding:2px;\n" + "border-bottom:1px solid grey;\n" + "border-right:1px solid grey;\n"
-			+ "vertical-align:top;\n" + "}\n" + ".c2 {\n" + "font-weight:normal;\n" + "font-size:90%;\n"
-			+ "padding:2px;\n" + "border-bottom:1px solid grey;\n" + "border-right:1px solid grey;\n"
-			+ "vertical-align:top;\n" + "}\n" + "-->\n" + "</style>\n");
+		ret.append("""
+			<style type="text/css">
+			<!--
+			.c1 {
+			    font-weight:bold;
+			    font-size:100%;
+			    padding:2px;
+			    border-bottom:1px solid grey;
+			    border-right:1px solid grey;
+			    vertical-align:top;
+			}
+			.c2 {
+			    font-weight:normal;
+			    font-size:90%;
+			    padding:2px;
+			    border-bottom:1px solid grey;
+			    border-right:1px solid grey;
+			    vertical-align:top;
+			}
+			-->
+			</style>
+			""");
 
 		ret.append("<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n<tr><td class=\"c1\" style=\"width:"
 			+ firstColWidth + "\">&nbsp;</td>");
@@ -56,7 +73,7 @@ public class ProgramManager {
 		return ret.toString();
 	}
 
-	public static String getRestOfDayAsHtml(File... radioBaseDirs) {
+	public static String getRestOfDayAsHtml(final File... radioBaseDirs) {
 		StringBuilder ret = new StringBuilder();
 
 		ret.append("<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n");
@@ -113,28 +130,21 @@ public class ProgramManager {
 		return ret.toString();
 	}
 
-	private static String getWeekdayAsString(int weekdayFromCalendar) {
-		switch (weekdayFromCalendar) {
-			case Calendar.MONDAY:
-				return weekdays[0];
-			case Calendar.TUESDAY:
-				return weekdays[1];
-			case Calendar.WEDNESDAY:
-				return weekdays[2];
-			case Calendar.THURSDAY:
-				return weekdays[3];
-			case Calendar.FRIDAY:
-				return weekdays[4];
-			case Calendar.SATURDAY:
-				return weekdays[5];
-			case Calendar.SUNDAY:
-				return weekdays[6];
-			default:
-				throw new IllegalArgumentException();
-		}
+	private static String getWeekdayAsString(final int weekdayFromCalendar) {
+		return switch (weekdayFromCalendar) {
+			case Calendar.MONDAY -> weekdays[0];
+			case Calendar.TUESDAY -> weekdays[1];
+			case Calendar.WEDNESDAY -> weekdays[2];
+			case Calendar.THURSDAY -> weekdays[3];
+			case Calendar.FRIDAY -> weekdays[4];
+			case Calendar.SATURDAY -> weekdays[5];
+			case Calendar.SUNDAY -> weekdays[6];
+			default -> throw new IllegalArgumentException();
+
+		};
 	}
 
-	private static String getInfoFileContent(String path) {
+	private static String getInfoFileContent(final String path) {
 		String ret = "Sendung ohne Titel";
 		File infoFile = new File(path + File.separator + "info.txt");
 		if (infoFile.exists() && infoFile.canRead()) {
@@ -159,7 +169,7 @@ public class ProgramManager {
 		return ret;
 	}
 
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		File[] radioBaseDirs = new File[args.length];
 		if (args != null) {
 			for (int i = 0; i < args.length; i++) {
